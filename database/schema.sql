@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS generated_recipes (
 );
 
 
--- saved_recipes - references the recipes table
+-- saved_recipes - references the recipes table. recipes that the user has chosen to save for later
 CREATE TABLE IF NOT EXISTS saved_recipes (
   saved_recipe_id INT AUTO_INCREMENT PRIMARY KEY,
   recipe_id INT NOT NULL UNIQUE,
