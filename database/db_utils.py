@@ -1,11 +1,8 @@
 import mysql.connector
-from config import DB_CONFIG
 from mysql.connector import Error # Error class for db specific exception
 from dotenv import load_dotenv # function to load env vars from .env file
 import os
 
-def get_db_connection():
-    return mysql.connector.connect(**DB_CONFIG)
 load_dotenv() # loads all vars from .env for os.getenv() access
 
 # reads db name and db credentials from env var, and use them to establish connection to database
