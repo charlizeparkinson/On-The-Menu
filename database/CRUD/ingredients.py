@@ -17,3 +17,21 @@ INSERT INTO ingredients
 VALUES
     (%s, %s, %s, %s, %s)
 """
+
+# update ingredient statement
+update_ingredient = """
+UPDATE ingredients
+SET
+  ingredient_name = %s,
+  ingredient_type = %s,
+  ingredient_quantity = %s,
+  unit_name = %s,
+  expiration_date = %s
+WHERE ingredient_id = %s
+"""
+
+# delete ingredient execution
+delete_ingredient = """
+DELETE FROM ingredients
+WHERE ingredient_id = %s
+"""
