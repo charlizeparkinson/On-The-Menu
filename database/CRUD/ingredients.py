@@ -35,3 +35,9 @@ delete_ingredient = """
 DELETE FROM ingredients
 WHERE ingredient_id = %s
 """
+
+# select ingredients
+
+select_ingredients = """
+SELECT * FROM ingredients
+"""
