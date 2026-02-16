@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 from database.db_utils import get_connection
-from fastapi import Body
+from fastapi import Body, HTTPException
 from database.CRUD.ingredients import select_ingredients
 from database.CRUD.ingredients import insert_ingredient
+from mysql.connector.errors import IntegrityError, DatabaseError
 
 router = APIRouter()
 
@@ -20,26 +21,36 @@ def get_ingredients():
         return {"ingredients": rows}
 
 # insert ingredient/s into table
-
 @router.post("/ingredients", status_code=201)
 def create_ingredient(data: dict = Body(...)):
     conn = get_connection()
     cur = conn.cursor()
 
-    name = (data.get("ingredient_name") or "").strip().lower()
-    ingredient_type = data.get("ingredient_type", "Unknown")
-    quantity = data.get("ingredient_quantity", 0)
-    unit_name = (data.get("unit_name") or "Unknown").strip()
-    expiration_date = data.get("expiration_date")
+    try:
+        name = (data.get("ingredient_name") or "").strip().lower()
+        ingredient_type = data.get("ingredient_type", "Unknown")
+        quantity = data.get("ingredient_quantity", 0)
+        unit_name = (data.get("unit_name") or "Unknown").strip()
+        expiration_date = data.get("expiration_date")
 
-    cur.execute(
-        insert_ingredient,
-        (name, ingredient_type, quantity, unit_name, expiration_date)
-    )
+        cur.execute(
+            insert_ingredient,
+            (name, ingredient_type, quantity, unit_name, expiration_date)
+        )
+        conn.commit()
 
-    conn.commit()
+        return {"message": "Ingredient added to the database successfully"}
 
-    cur.close()
-    conn.close()
+    except IntegrityError as e:
+        conn.rollback()
+        if getattr(e, "errno", None) == 1062: # mysql duplicate entry error code
+            raise HTTPException(status_code=409, detail="This ingredient name already exists")
+        raise HTTPException(status_code=400, detail="Invalid data")
 
-    return {"message": "Ingredient added to the database successfully"}
+    except DatabaseError:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail="Database error")
+
+    finally:
+        cur.close()
+        conn.close()
