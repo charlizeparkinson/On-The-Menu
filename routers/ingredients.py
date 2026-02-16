@@ -1,8 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Body, HTTPException
 from database.db_utils import get_connection
-from fastapi import Body, HTTPException
-from database.CRUD.ingredients import select_ingredients
-from database.CRUD.ingredients import insert_ingredient
+from database.CRUD.ingredients import select_ingredients, insert_ingredient
 from mysql.connector.errors import IntegrityError, DatabaseError
 
 router = APIRouter()
