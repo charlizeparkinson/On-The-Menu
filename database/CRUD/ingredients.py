@@ -36,7 +36,8 @@ DELETE FROM ingredients
 WHERE ingredient_id = %s
 """
 
-# select ingredients
+# select ingredients - if 2 or more ingredients expire on the same date, order them via their id number in asc order
 select_ingredients = """
 SELECT * FROM ingredients
+ORDER BY expiration_date ASC, ingredient_id ASC;
 """
