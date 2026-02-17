@@ -34,25 +34,6 @@ def search_recipes(data: dict = Body(default={})):
 
     # spoonacular API call
     url = "https://api.spoonacular.com/recipes/complexSearch"
-    params = {
-        "apiKey": SPOONACULAR_API_KEY,
-        "includeIngredients": ",".join(kitchen_ingredients),
-        "number": number,
-        "addRecipeInformation": True,
-        "fillIngredients": True,
-        "instructionsRequired": True
-    }
-    if diet:
-        params["diet"] = diet
-    if recipe_type:
-        params["type"] = recipe_type
-
+    params = {"apiKey": SPOONACULAR_API_KEY, "number": 1}
     r = requests.get(url, params=params, timeout=15)
-    if r.status_code != 200:
-        raise HTTPException(status_code=502, detail=f"Spoonacular error: {r.text}")
-
-    return {
-        "priority_ingredients": priority_ingredients,
-        "kitchen_ingredients": kitchen_ingredients,
-        "spoonacular": r.json()
-    }
+    return r.json()
