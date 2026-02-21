@@ -33,7 +33,41 @@ def search_recipes(data: dict = Body(default={})):
     number = int(data.get("number", 10))
 
     # spoonacular API call
-    url = "https://api.spoonacular.com/recipes/complexSearch"
-    params = {"apiKey": SPOONACULAR_API_KEY, "number": 1}
+    url = "https://api.spoonacular.com/recipes/findByIngredients"
+    params = {
+    "apiKey": SPOONACULAR_API_KEY,
+    "ingredients": ",".join(priority_ingredients),  # top 3 expiring
+    "number": number,
+    "ranking": 2,
+    "ignorePantry": True
+    }
+
     r = requests.get(url, params=params, timeout=15)
-    return r.json()
+    if r.status_code != 200:
+        raise HTTPException(status_code=502, detail=f"Spoonacular error: {r.text}")
+
+    candidates = r.json()
+
+    # filtering so ingredients in generated recipes only contain ingredients user already has, excluding 'kitchen staples'
+    kitchen_staples = {
+        "salt", "pepper", "water", "oil", "olive oil", "butter"
+    }
+
+    def is_allowed_to_be_missing(missed_ingredients: list[dict]) -> bool:
+        for ing in missed_ingredients:
+            name = (ing.get("name") or "").strip().lower()
+            if name not in kitchen_staples:
+                return False
+        return True
+
+    pantry_only = [
+        rec for rec in candidates
+        if is_allowed_to_be_missing(rec.get("missedIngredients", []))
+    ]
+
+    return {
+    "priority_ingredients": priority_ingredients,
+    "recipes_found": len(candidates),
+    "pantry_only_count": len(pantry_only),
+    "example_missing": candidates[0].get("missedIngredients", []) if candidates else []
+}
